@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Map{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- Left side: form + list -->
+  <div class="col-md-6">
+    <h1>My Items</h1>
+
+    <!-- Add new item form -->
+    <h3>Add a new item</h3>
+    <form method="post" class="mb-4">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Add Item</button>
+    </form>
+
+    <!-- Item list -->
+    <ul class="list-group">
+      {% for item in items %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>
+            <strong>{{ item.name }}</strong>
+            (Longitude: {{ item.longitude }}, Latitude: {{ item.latitude }})
+          </span>
+          <span>
+            <a href="{% url 'edit_item' item.id %}" class="btn btn-sm btn-warning">Edit</a>
+            <a href="{% url 'delete_item' item.id %}" class="btn btn-sm btn-danger">Delete</a>
+          </span>
+        </li>
+      {% empty %}
+        <li class="list-group-item">No items found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Right side: map -->
+  <div class="col-md-6">
+    <h3>Map</h3>
+    <!-- The map container must have a fixed height -->
+    <div id="map" style="height: 500px; width: 100%; background: lightgray;"></div>
+
+  </div>
+</div>
+
+<!-- Leaflet CSS -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ 
+
+/>
+
+<!-- Leaflet JS -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+
+></script>
+
+<script>
+  // Default center (Tel Aviv) if no items exist
+  var defaultCenter = [32.0853, 34.7818];
+  var defaultZoom = 8;
+
+  // Create the map
+  var map = L.map('map').setView(defaultCenter, defaultZoom);
+
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Collect markers
+  var markers = [];
+
+// Add markers for each item
+{% for item in items %}
+  {% if item.latitude != 0 and item.longitude != 0 %}
+    var marker = L.marker([{{ item.latitude }}, {{ item.longitude }}]).addTo(map);
+    marker.bindPopup("<b>{{ item.name|escape }}</b><br/>Lat: {{ item.latitude }}<br/>Lng: {{ item.longitude }}");
+    markers.push(marker);
+  {% endif %}
+{% endfor %}
+
+
+  // Fit map to markers if any exist
+  if (markers.length > 0) {
+    var group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.2));
+  }
+
+var clickMarker;
+
+map.on('click', function(e) {
+  var lat = e.latlng.lat.toFixed(6);
+  var lng = e.latlng.lng.toFixed(6);
+
+  document.getElementById('id_latitude').value = lat;
+  document.getElementById('id_longitude').value = lng;
+
+  // Remove old marker if it exists
+  if (clickMarker) {
+    map.removeLayer(clickMarker);
+  }
+
+  // Add new marker
+  clickMarker = L.marker([lat, lng]).addTo(map)
+    .bindPopup("Selected location:<br/>Lat: " + lat + "<br/>Lng: " + lng)
+    .openPopup();
+});
+
+
+</script>
+{% endblock %}

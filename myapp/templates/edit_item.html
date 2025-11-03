@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Item{% endblock %}
+
+{% block content %}
+  <h1>Edit Item: {{ book.title }}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a href="{% url 'map' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+{% endblock %}
