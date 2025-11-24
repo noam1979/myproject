@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Edit Sensor{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Edit Sensor for {{ sensor.item.name }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <button type="submit" name="delete_sensor" class="btn btn-danger">Delete Sensor</button>
+    <a href="{% url 'edit_item' sensor.item.id %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

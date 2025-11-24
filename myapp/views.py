@@ -1,14 +1,19 @@
 # Import JsonResponse so we can return JSON instead of HTML
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Item
-from .forms import ItemForm
+from .forms import ItemForm, SensorForm
 
 # Import JsonResponse and Json parser
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt   # to allow POST from external scripts
 import json
 
+from .models import Sensor
 
+# Home page view
+def home(request):
+    # Render the home.html template
+    return render(request, 'home.html')
 
 def map(request):
     items = Item.objects.all()
@@ -25,16 +30,27 @@ def map(request):
 
 def edit_item(request, item_id):
     item = get_object_or_404(Item, id=item_id)
+    item_form = ItemForm(instance=item)
+    sensor_form = SensorForm()
 
     if request.method == "POST":
-        form = ItemForm(request.POST, instance=item)
-        if form.is_valid():
-            form.save()
-            return redirect('map')
-    else:
-        form = ItemForm(instance=item)
+        if 'add_sensor' in request.POST:
+            sensor_form = SensorForm(request.POST)
+            if sensor_form.is_valid():
+                sensor = sensor_form.save(commit=False)
+                sensor.item = item
+                sensor.save()
+        else:
+            item_form = ItemForm(request.POST, instance=item)
+            if item_form.is_valid():
+                item_form.save()
+        return redirect('edit_item', item_id=item.id)
 
-    return render(request, 'edit_item.html', {'form': form, 'item': item})
+    return render(request, 'edit_item.html', {
+        'form': item_form,
+        'sensor_form': sensor_form,
+        'item': item,
+    })
 
 def delete_item(request, item_id):
     item = get_object_or_404(Item, id=item_id)
@@ -149,3 +165,79 @@ def api_delete_item(request, item_id):
         return JsonResponse({"message": f"Item {item_id} deleted"}, status=200)
 
     return JsonResponse({"error": "DELETE request required"}, status=405)
+
+def edit_sensor(request, sensor_id):
+    sensor = get_object_or_404(Sensor, id=sensor_id)
+    form = SensorForm(instance=sensor)
+
+    if request.method == "POST":
+        if "delete_sensor" in request.POST:
+            sensor.delete()
+            # Redirect back to the parent item's edit page
+            return redirect("edit_item", item_id=sensor.item.id)
+        else:
+            form = SensorForm(request.POST, instance=sensor)
+            if form.is_valid():
+                form.save()
+                return redirect("edit_item", item_id=sensor.item.id)
+
+    return render(request, "edit_sensor.html", {
+        "form": form,
+        "sensor": sensor,
+    })
+
+def api_sensors(request, item_id):
+    sensors = Sensor.objects.filter(item_id=item_id).values(
+        "id", "plant_name", "pump_thr", "humidity", "temp", "light"
+    )
+    return JsonResponse(list(sensors), safe=False)
+
+@csrf_exempt
+def api_create_sensor(request, item_id):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        sensor = Sensor.objects.create(
+            item_id=item_id,
+            plant_name=data["plant_name"],
+            pump_thr=data.get("pump_thr", 50),
+            humidity=data.get("humidity", 0),
+            temp=data.get("temp", 0),
+            light=data.get("light", 0),
+        )
+        return JsonResponse({
+            "id": sensor.id,
+            "plant_name": sensor.plant_name,
+            "pump_thr": sensor.pump_thr,
+            "humidity": sensor.humidity,
+            "temp": sensor.temp,
+            "light": sensor.light,
+        }, status=201)
+
+@csrf_exempt
+def api_update_sensor(request, sensor_id):
+    if request.method == "PUT":
+        data = json.loads(request.body.decode("utf-8"))
+        sensor = get_object_or_404(Sensor, id=sensor_id)
+
+        for field in ["plant_name", "pump_thr", "humidity", "temp", "light"]:
+            if field in data and data[field] is not None:
+                setattr(sensor, field, data[field])
+
+        sensor.save()
+
+        return JsonResponse({
+            "id": sensor.id,
+            "plant_name": sensor.plant_name,
+            "pump_thr": sensor.pump_thr,
+            "humidity": sensor.humidity,
+            "temp": sensor.temp,
+            "light": sensor.light,
+        }, status=200)
+
+
+@csrf_exempt
+def api_delete_sensor(request, sensor_id):
+    if request.method == "DELETE":
+        sensor = get_object_or_404(Sensor, id=sensor_id)
+        sensor.delete()
+        return JsonResponse({"message": f"Sensor {sensor_id} deleted"})

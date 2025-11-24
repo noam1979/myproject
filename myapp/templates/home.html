@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Moisture Sense | Smart IoT Control{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center p-5 bg-light rounded">
+  <h1 class="display-4">Control and Optimize Moisture Levels with Smart IoT</h1>
+  <p class="lead">
+    Real-time soil and ambient moisture monitoring, intelligent alerts, and actionable analytics—designed to keep your crops, gardens, and facilities within the ideal range.
+  </p>
+  <div class="mt-4">
+    <a href="#get-started" class="btn btn-primary btn-lg me-2">Get Started</a>
+    <a href="#features" class="btn btn-outline-secondary btn-lg">Explore Features</a>
+  </div>
+  <div class="mt-3 text-muted">
+    <span class="me-3">💡 Real-time streaming</span>
+    <span class="me-3">🔒 Secure by design</span>
+    <span>☁️ Cloud & Edge ready</span>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="mt-5">
+  <div class="text-center mb-4">
+    <h2>Why Moisture Sense</h2>
+    <p>Powerful features for precision control and peace of mind.</p>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h3 class="card-title">Real-time Monitoring</h3>
+          <p class="card-text">Stream moisture data at second-level granularity with reliable telemetry and auto-calibration support.</p>
+          <a href="#dashboard" class="card-link">See live dashboard →</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h3 class="card-title">Smart Alerts</h3>
+          <p class="card-text">Threshold-based and anomaly alerts via email, SMS, and webhook integrations to act before issues escalate.</p>
+          <a href="#contact" class="card-link">Configure notifications →</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h3 class="card-title">Data Analytics</h3>
+          <p class="card-text">Visualize trends, compare zones, and generate reports with exportable CSV and PDF summaries.</p>
+          <a href="#dashboard" class="card-link">View insights →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sensors Section -->
+<section id="sensors" class="mt-5">
+  <div class="text-center mb-4">
+    <h2>Supported Moisture Sensors</h2>
+    <p>Plug-and-play compatibility across a range of analog, capacitive, and digital soil moisture sensors.</p>
+  </div>
+  <ul class="list-group">
+    <li class="list-group-item">Capacitive Soil Sensor — <span class="badge bg-success">Supported</span></li>
+    <li class="list-group-item">Resistive Soil Sensor — <span class="badge bg-info">Compatible</span></li>
+    <li class="list-group-item">Industrial Probes — <span class="badge bg-warning">Enterprise</span></li>
+  </ul>
+</section>
+
+<!-- Dashboard Section -->
+<section id="dashboard" class="mt-5">
+  <div class="text-center mb-4">
+    <h2>Dashboard Preview</h2>
+    <p>A single pane of glass to track moisture, temperature, and irrigation status across zones.</p>
+  </div>
+  <div class="row text-center">
+    <div class="col-md-4">
+      <div class="border p-3">
+        <h5>Avg Moisture</h5>
+        <p class="display-6">42%</p>
+        <small class="text-success">+3% this week</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="border p-3">
+        <h5>Active Sensors</h5>
+        <p class="display-6">128</p>
+        <small class="text-success">+5 online</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="border p-3">
+        <h5>Alerts Today</h5>
+        <p class="display-6">4</p>
+        <small class="text-danger">1 critical</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Callout Section -->
+<section id="get-started" class="mt-5 bg-primary text-white text-center p-5 rounded">
+  <h3>Ready to bring precision to your moisture control?</h3>
+  <p>Connect your sensors and start monitoring in minutes. No credit card required.</p>
+  <a href="#" class="btn btn-light btn-lg me-2">Create Account</a>
+  <a href="#contact" class="btn btn-outline-light btn-lg">Contact Sales</a>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="mt-5">
+  <div class="text-center">
+    <h4>Contact Us</h4>
+    <p>noamnadav@hotmail.com | ☎ +972 (0)54-5470610</p>
+    <p>Bloy 1, Petakh Tikva, Israel</p>
+  </div>
+</section>
+{% endblock %}
