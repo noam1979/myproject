@@ -1,0 +1,62 @@
+/* ==============================
+   Custom overrides / additions
+   ============================== */
+
+/* Ensure links in dark navbar remain visible */
+.navbar-dark .nav-link {
+  color: rgba(255, 255, 255, 0.9); /* light but slightly softened */
+}
+
+/* Active link styling in dark navbar */
+.navbar-dark .nav-link.active {
+  color: #fff; /* full white */
+  background-color: rgba(255, 255, 255, 0.15); /* subtle highlight */
+  border-radius: 4px;
+}
+
+/* Brand customization: bolder and a bit more spaced */
+.navbar-brand {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Navbar padding tweak for a bit more breathing room */
+.navbar {
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
+/* Style the search input inside the navbar (if present) */
+.navbar .form-control {
+  min-width: 180px;
+}
+
+/* Optional: subtle hover effect for nav links */
+.navbar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+/* Container for main content to separate from navbar visually */
+.container.mt-4 {
+  padding-top: 1rem;
+}
+
+/* General body tweaks if you want a light background */
+body {
+  background-color: #f8f9fa; /* light neutral gray (Bootstrap-friendly) */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Make lists (like book list) look a bit nicer if not using Bootstrap components */
+ul {
+  padding-left: 1.2rem;
+}
+
+/* Optional: card-like styling for any custom content */
+.card-custom {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
