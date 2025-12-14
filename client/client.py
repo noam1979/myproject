@@ -1,7 +1,56 @@
+# client/client.py
+
 import argparse
-from data_access import *  # Import all API-related functions (CRUD for items and sensors)
+import json
+# Import the client class and configuration variables
+from data_access import DjangoAPIClient, USERNAME, PASSWORD, LOGIN_URL
+
+
+def get_all_data(client):
+    """
+    Fetches and prints all items and their related sensors using the authenticated client.
+    """
+    # Check if the client successfully logged in
+    if not client.is_authenticated:
+        print("Aborting data fetch because client failed to authenticate.")
+        return
+
+    # Use the client object's method to fetch all items
+    items = client.get_items()
+    
+    if not items:
+        print("No items found or error occurred while fetching items.")
+        return
+
+    print("--- Successful Data Dump ---")
+    
+    for item in items:
+        # Print item details
+        print(f"Item {item['id']}: {item['name']} "
+              f"(Lat: {item['latitude']}, Lon: {item['longitude']})")
+
+        # Use the client object's method to fetch sensors for the current item
+        sensors = client.get_sensors(item['id'])
+        
+        if sensors:
+            for s in sensors:
+                # Print sensor details
+                print(f"    Sensor {s['id']}: {s['plant_name']} "
+                      f"(PumpThr: {s['pump_thr']}, Hum: {s['humidity']}, "
+                      f"Temp: {s['temp']}, Light: {s['light']})")
+        else:
+            print("    No sensors found or error fetching sensors.")
+
 
 def main():
+    # 1. Initialize the client (this automatically attempts to log in)
+    client = DjangoAPIClient(USERNAME, PASSWORD, LOGIN_URL)
+
+    # Check if login was successful before continuing to parse commands
+    if not client.is_authenticated:
+        # If authentication fails, the data_access handles printing the error, we just exit main.
+        return
+
     # Create the main argument parser for the CLI tool
     parser = argparse.ArgumentParser(
         description="Client for Django API CRUD operations."
@@ -74,30 +123,53 @@ def main():
     # Command execution
     # -----------------------------
 
-    # Call the correct function based on the selected command
+    # Call the correct function based on the selected command, using the client object
     if args.command == "list":
-        get_items()
+        # Get items and format the printout
+        items = client.get_items()
+        if items:
+            print("Items from API:")
+            for item in items:
+                print(f"- {item['id']}: {item['name']} "
+                      f"(Lat: {item['latitude']}, Lon: {item['longitude']})")
     elif args.command == "create":
-        create_item(args.name, args.lat, args.long)
+        client.create_item(args.name, args.lat, args.long)
     elif args.command == "update":
-        update_item(args.id, args.name, args.lat, args.long)
+        # Pass all update arguments, allowing None for fields not provided
+        client.update_item(args.id, args.name, args.lat, args.long)
     elif args.command == "delete":
-        delete_item(args.id)
+        client.delete_item(args.id)
     elif args.command == "list-sensors":
-        get_sensors(args.item_id)
+        # Get sensors and format the printout
+        sensors = client.get_sensors(args.item_id)
+        if sensors:
+            print(f"Sensors for item {args.item_id}:")
+            for s in sensors:
+                print(f"- {s['id']}: {s['plant_name']} "
+                      f"(PumpThr: {s['pump_thr']}, Hum: {s['humidity']}, "
+                      f"Temp: {s['temp']}, Light: {s['light']})")
     elif args.command == "create-sensor":
-        create_sensor(args.item_id, args.plant, args.pump, args.hum, args.temp, args.light)
+        client.create_sensor(args.item_id, args.plant, args.pump, args.hum, args.temp, args.light)
     elif args.command == "update-sensor":
-        update_sensor(args.id,
-                      plant_name=args.plant,
-                      pump_thr=args.pump,
-                      humidity=args.hum,
-                      temp=args.temp,
-                      light=args.light)
+        # Collect kwargs for sensor update, allowing None/default values to be skipped
+        update_kwargs = {}
+        if args.plant:
+            update_kwargs['plant_name'] = args.plant
+        if args.pump is not None:
+            update_kwargs['pump_thr'] = args.pump
+        if args.hum is not None:
+            update_kwargs['humidity'] = args.hum
+        if args.temp is not None:
+            update_kwargs['temp'] = args.temp
+        if args.light is not None:
+            update_kwargs['light'] = args.light
+        
+        client.update_sensor(args.id, **update_kwargs)
+        
     elif args.command == "delete-sensor":
-        delete_sensor(args.id)
+        client.delete_sensor(args.id)
     elif args.command == "dump":
-        get_all_data()
+        get_all_data(client)
 
 # Entry point – runs the main() function when executed directly
 if __name__ == "__main__":
