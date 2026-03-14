@@ -10,4 +10,4 @@ class ItemForm(forms.ModelForm):
 class SensorForm(forms.ModelForm):
     class Meta:
         model = Sensor
-        fields = ['plant_name', 'pump_thr', 'humidity', 'temp', 'light']
+        fields = ['sn','plant_name', 'pump_thr', 'humidity', 'temp', 'light']

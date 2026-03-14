@@ -1,5 +1,5 @@
 # client/client.py
-
+# if i want to test the WEB with switches
 import argparse
 import json
 # Import the client class and configuration variables

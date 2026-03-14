@@ -1,36 +1,25 @@
 {% extends 'base.html' %}
-{% block title %}Edit Gateway{% endblock %}
+{% block title %}Manage Sensors{% endblock %}
 
 {% block content %}
 <div class="row">
-  <!-- Left column top: Edit gateway -->
   <div class="col-12 col-md-5">
-    <h2>Edit Gateway</h2>
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <div class="d-flex justify-content-start gap-2">
-        <button type="submit" class="btn btn-success">Save Gateway</button>
-        <a href="{% url 'map' %}" class="btn btn-secondary">Cancel</a>
-      </div>
-    </form>
-
-    <hr>
-    <!-- Left column bottom: Add sensor -->
+    
     <h3>Add Sensor</h3>
     <form method="post">
       {% csrf_token %}
       {{ sensor_form.as_p }}
-      <button type="submit" name="add_sensor" class="btn btn-primary">Add Sensor</button>
+      <div class="d-flex justify-content-start gap-2">
+        <button type="submit" name="add_sensor" class="btn btn-primary">Add Sensor</button>
+        <a href="{% url 'map' %}" class="btn btn-secondary">Back to Map</a>
+      </div>
     </form>
   </div>
 
-  <!-- Vertical divider -->
   <div class="col-md-1 d-none d-md-flex align-items-center justify-content-center">
     <div style="width:1px; height:100%; background-color:#ccc;"></div>
   </div>
 
-  <!-- Right column: Sensor list -->
   <div class="col-12 col-md-6">
     <h3>Sensors for {{ item.name }}</h3>
     <hr>
@@ -38,19 +27,19 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>SN</th>
           <th>Plant Name</th>
           <th>Pump Thr</th>
           <th>Humidity</th>
-          <th>Temp</th>
-          <th>Light</th>
+          <th>Temp(c)</th>
+          <th>Light(hrs)</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for sensor in item.sensors.all %}
           <tr>
-            <td>{{ sensor.id }}</td>
+            <td>{{ sensor.sn }}</td>
             <td>{{ sensor.plant_name }}</td>
             <td>{{ sensor.pump_thr }}</td>
             <td>{{ sensor.humidity }}</td>

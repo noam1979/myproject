@@ -1,3 +1,5 @@
+# --------------------new code----------------------
+# access to the WEB
 # client/data_access.py
 
 import requests
@@ -5,14 +7,17 @@ import json
 import re
 
 # --- CONFIGURATION (UPDATE THESE) ---
-# Replace with your actual Django username and password
 USERNAME = 'noamn' 
 PASSWORD = 'admin' 
-LOGIN_URL = 'http://127.0.0.1:8000/accounts/login/' 
 
 # Local Django server URLs
+LOGIN_URL = 'http://127.0.0.1:8000/accounts/login/' 
 BASE_URL = "http://127.0.0.1:8000/api/items/"
 SENSOR_BASE_URL = "http://127.0.0.1:8000/api/"
+
+# LOGIN_URL = 'http://noamnadav123.pythonanywhere.com/accounts/login/' 
+# BASE_URL = "http://noamnadav123.pythonanywhere.com/api/items/"
+# SENSOR_BASE_URL = "http://noamnadav123.pythonanywhere.com/api/"
 
 # ------------------------------------------
 # API CLIENT CLASS
@@ -31,15 +36,11 @@ class DjangoAPIClient:
         self.is_authenticated = False
         self.authenticate()
 
-
-
     def authenticate(self):
         """
         Performs the login sequence (GET for CSRF, then POST with credentials) 
         to establish an authenticated session.
         """
-        # Initialize csrf_token_match to None to prevent NameError 
-        # if an exception occurs before assignment.
         csrf_token_match = None
         
         # 1. First GET request to get the login page and the CSRF token
@@ -51,13 +52,11 @@ class DjangoAPIClient:
             return False
 
         # Extract the CSRF token from the login page HTML
-        # This robust regex handles both single (' ) and double (" ) quotes 
-        # around attribute values, fixing the previous issue.
         csrf_token_match = re.search(r'name=["\']csrfmiddlewaretoken["\']\s+value=["\']([^"\']+)["\']', 
                                      login_page_response.text)
         
         if not csrf_token_match:
-            print("Error: Could not find CSRF token on login page. Check if LOGIN_URL is correct or if the page requires a different URL.")
+            print("Error: Could not find CSRF token on login page.")
             return False
             
         csrf_token = csrf_token_match.group(1)
@@ -76,7 +75,7 @@ class DjangoAPIClient:
             self.login_url, 
             data=login_data, 
             headers={'Referer': self.login_url},
-            allow_redirects=False # Check for 302 redirect status explicitly
+            allow_redirects=False 
         )
 
         # Check for successful login (Django returns 302 Found on success)
@@ -90,8 +89,22 @@ class DjangoAPIClient:
             return False
 
     # ------------------------------------------
+    # NEW: POLLING FUNCTION (NO SHORTCUTS)
+    # ------------------------------------------
+
+    def get_sensor_details(self, item_id, sensor_id):
+        """
+        Explicitly fetches the latest data for a specific sensor 
+        by searching the item's sensor list.
+        """
+        sensors = self.get_sensors(item_id)
+        for sensor in sensors:
+            if sensor['id'] == sensor_id:
+                return sensor
+        return None
+
+    # ------------------------------------------
     # SENSOR FUNCTIONS
-    # (Adapted to use self.session)
     # ------------------------------------------
 
     def get_sensors(self, item_id):
@@ -111,20 +124,23 @@ class DjangoAPIClient:
             print("Error fetching sensors:", r.status_code, r.text)
             return []
 
-
     def create_sensor(self, item_id, plant_name, pump_thr=50, humidity=0, temp=0, light=0):
         """
         Create a new sensor for a specific item using the authenticated session.
         """
         url = f"{SENSOR_BASE_URL}items/{item_id}/sensors/create/"
-        payload = {"plant_name": plant_name, "pump_thr": pump_thr,
-                    "humidity": humidity, "temp": temp, "light": light}
+        payload = {
+            "plant_name": plant_name, 
+            "pump_thr": pump_thr,
+            "humidity": humidity, 
+            "temp": temp, 
+            "light": light
+        }
         r = self.session.post(url, json=payload)
         try:
             print("Sensor created:" if r.status_code == 201 else "Error:", r.json())
         except json.JSONDecodeError:
             print("Error:", r.status_code, r.text)
-
 
     def update_sensor(self, sensor_id, **kwargs):
         """
@@ -133,10 +149,13 @@ class DjangoAPIClient:
         url = f"{SENSOR_BASE_URL}sensors/{sensor_id}/update/"
         r = self.session.put(url, json=kwargs)
         try:
-            print("Sensor updated:" if r.status_code == 200 else "Error:", r.json())
+            if r.status_code == 200:
+                #print("Sensor updated successfully.")
+                pass
+            else:
+                print("Error updating sensor:", r.json())
         except json.JSONDecodeError:
-            print("Error:", r.status_code, r.text)
-
+            print("Error parsing update response:", r.status_code, r.text)
 
     def delete_sensor(self, sensor_id):
         """
@@ -147,11 +166,13 @@ class DjangoAPIClient:
         try:
             print("Sensor deleted:" if r.status_code == 204 else "Error:", r.json())
         except json.JSONDecodeError:
-            print("Error:", r.status_code, r.text)
+            if r.status_code == 204:
+                print("Sensor deleted: 204 No Content")
+            else:
+                print("Error deleting sensor:", r.status_code, r.text)
 
     # ------------------------------------------
     # ITEM FUNCTIONS
-    # (Adapted to use self.session)
     # ------------------------------------------
 
     def get_items(self):
@@ -169,7 +190,6 @@ class DjangoAPIClient:
             print("Error fetching items:", response.status_code, response.text)
             return []
 
-
     def create_item(self, name, latitude, longitude):
         """
         Create a new item using the authenticated session.
@@ -180,7 +200,6 @@ class DjangoAPIClient:
             print("Item created:" if response.status_code == 201 else "Error:", response.json())
         except json.JSONDecodeError:
             print("Error creating item:", response.status_code, response.text)
-
 
     def update_item(self, item_id, name=None, latitude=None, longitude=None):
         """
@@ -201,7 +220,6 @@ class DjangoAPIClient:
         except json.JSONDecodeError:
             print("Error updating item:", response.status_code, response.text)
 
-
     def delete_item(self, item_id):
         """
         Delete an item by ID using the authenticated session.
@@ -209,11 +227,9 @@ class DjangoAPIClient:
         url = f"{BASE_URL}{item_id}/delete/"
         response = self.session.delete(url)
         try:
-            # Check for 204 No Content for successful deletion
-            print("Item deleted:" if response.status_code == 204 else "Error:", response.json() if response.content else response.status_code)
-        except json.JSONDecodeError:
-            # If 204 is returned, there might be no content to decode
             if response.status_code == 204:
                 print("Item deleted: 204 No Content")
             else:
-                print("Error deleting item:", response.status_code, response.text)
+                print("Error deleting item:", response.json() if response.content else response.status_code)
+        except json.JSONDecodeError:
+            print("Error deleting item:", response.status_code, response.text)
